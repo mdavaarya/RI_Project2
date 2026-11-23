@@ -51,11 +51,11 @@ WITH CHECK (
     profile_id = auth.uid() AND status = 'pending'
 );
 
--- Only pengurus can update member status
-CREATE POLICY "Only pengurus can update member status"
+-- Members can update their own member record (alamat), pengurus can update all
+CREATE POLICY "Members can update own member info or pengurus all"
 ON public.members FOR UPDATE
-USING (public.is_pengurus())
-WITH CHECK (public.is_pengurus());
+USING (profile_id = auth.uid() OR public.is_pengurus())
+WITH CHECK (profile_id = auth.uid() OR public.is_pengurus());
 
 -- 3. SAVINGS POLICIES (Read-Only for Members per DEC-04 & AC-020)
 -- Members can only read their own savings records

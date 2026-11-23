@@ -28,9 +28,24 @@ export function ProfilePage() {
 
   const [nama, setNama] = useState(profile?.nama || '');
   const [noHp, setNoHp] = useState(profile?.no_hp || '');
+  const [alamat, setAlamat] = useState(member?.alamat || '');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'danger' | 'warning'; message: string } | null>(null);
+
+  // Sync state when profile or member changes
+  useEffect(() => {
+    if (profile?.nama) setNama(profile.nama);
+    if (profile?.no_hp !== undefined) setNoHp(profile.no_hp || '');
+    if (member?.alamat !== undefined) setAlamat(member.alamat || '');
+  }, [profile?.nama, profile?.no_hp, member?.alamat]);
+
+  const handleCancel = () => {
+    setNama(profile?.nama || '');
+    setNoHp(profile?.no_hp || '');
+    setAlamat(member?.alamat || '');
+    setIsEditing(false);
+  };
 
   // Domisili Transfer State
   const [showDomisiliModal, setShowDomisiliModal] = useState(false);
@@ -68,6 +83,11 @@ export function ProfilePage() {
       return;
     }
 
+    if (member && !alamat.trim()) {
+      setFeedback({ type: 'danger', message: 'Alamat domisili terdaftar tidak boleh kosong.' });
+      return;
+    }
+
     if (!profile?.id) return;
 
     setIsLoading(true);
@@ -77,10 +97,12 @@ export function ProfilePage() {
       const res = await memberService.updateProfile(profile.id, {
         nama: nama.trim(),
         no_hp: noHp.trim(),
+        alamat: alamat.trim(),
+        memberId: member?.id,
       });
 
       if (res.success) {
-        setFeedback({ type: 'success', message: 'Data profil berhasil diperbarui.' });
+        setFeedback({ type: 'success', message: 'Data profil dan alamat domisili berhasil diperbarui.' });
         setIsEditing(false);
         await refreshSession();
       } else {
@@ -240,7 +262,7 @@ export function ProfilePage() {
                 Ubah Profil
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
                 Batal
               </Button>
             )}
@@ -273,6 +295,30 @@ export function ProfilePage() {
                 />
               </div>
 
+              {/* Alamat Domisili Terdaftar - Sekarang dapat diubah oleh anggota */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[#17212B]">
+                  Alamat Domisili Terdaftar {isEditing && <span className="text-[#B91C1C]">*</span>}
+                </label>
+                {isEditing ? (
+                  <textarea
+                    rows={2}
+                    value={alamat}
+                    onChange={(e) => setAlamat(e.target.value)}
+                    placeholder="Contoh: Jl. Merdeka No. 45, RT 02 / RW 01, Desa Sukamaju"
+                    className="w-full p-2.5 text-sm border border-[#E2E8F0] rounded-md focus:outline-none focus:ring-2 focus:ring-[#176B52]"
+                    required
+                  />
+                ) : (
+                  <p className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-md text-sm text-[#17212B]">
+                    {alamat || member?.alamat || 'Belum diisi'}
+                  </p>
+                )}
+                <p className="text-xs text-[#526170]">
+                  Alamat domisili tempat tinggal fisik anggota yang tercatat dalam sistem.
+                </p>
+              </div>
+
               {/* Protected Read-Only Fields (AC-022) */}
               <div className="pt-4 border-t border-[#E2E8F0] space-y-4">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-[#526170] uppercase tracking-wider">
@@ -295,18 +341,11 @@ export function ProfilePage() {
                     helperText="Diterbitkan secara resmi oleh sistem koperasi."
                   />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[#718096]">Alamat Domisili Terdaftar</label>
-                  <p className="p-3 bg-[#F1F5F9] border border-[#E2E8F0] rounded-md text-sm text-[#526170]">
-                    {member?.alamat || 'Belum diisi'}
-                  </p>
-                </div>
               </div>
 
               {isEditing && (
                 <div className="flex justify-end gap-2 pt-4 border-t border-[#E2E8F0]">
-                  <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                  <Button type="button" variant="outline" onClick={handleCancel}>
                     Batal
                   </Button>
                   <Button type="submit" variant="primary" isLoading={isLoading}>

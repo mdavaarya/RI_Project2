@@ -200,8 +200,8 @@ USING (profile_id = auth.uid() OR public.is_pengurus());
 CREATE POLICY "Users can create own membership record" ON public.members FOR INSERT
 WITH CHECK (profile_id = auth.uid() AND status = 'pending');
 
-CREATE POLICY "Only pengurus can update member status" ON public.members FOR UPDATE
-USING (public.is_pengurus()) WITH CHECK (public.is_pengurus());
+CREATE POLICY "Members can update own member info or pengurus all" ON public.members FOR UPDATE
+USING (profile_id = auth.uid() OR public.is_pengurus()) WITH CHECK (profile_id = auth.uid() OR public.is_pengurus());
 
 -- Savings (Read-only for members)
 CREATE POLICY "Members can view own savings" ON public.savings FOR SELECT

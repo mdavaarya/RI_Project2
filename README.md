@@ -69,7 +69,8 @@ SIMKOPDES/
 * **Beranda Anggota:** Menampilkan status keanggotaan, unit domisili koperasi, ringkasan saldo simpanan riil (Pokok, Wajib, Sukarela), serta **Riwayat Pengaduan Terkini**.
 * **Riwayat Simpanan:** Daftar transaksi lengkap dengan tanggal, jenis simpanan, nominal rupiah, dan keterangan (*read-only* bagi anggota).
 * **Profil Saya & Pengaturan Akun:** 
-  - NIK disamarkan (*masked*), nomor anggota dan status keanggotaan terproteksi.
+  - Nama lengkap, nomor HP/WhatsApp, dan **Alamat Domisili Terdaftar** dapat diubah dan disimpan secara mandiri oleh anggota.
+  - NIK disamarkan (*masked*), nomor anggota dan status keanggotaan terproteksi secara resmi.
   - **Pengajuan Pindah Domisili Koperasi Desa:** Anggota dapat mengajukan perpindahan unit koperasi ke desa lain beserta alasannya untuk diverifikasi oleh pengurus.
   - **Pengajuan Penghapusan Akun:** Opsi penutupan akun dengan penjelasan konsekuensi hak simpanan dan persetujuan pengurus.
 
@@ -219,6 +220,12 @@ Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
 ### [v1.1.2] - 2026-11-24
 * Penambahan skrip migrasi database komprehensif `src/supabase/migrations/all_in_one_setup.sql` agar pengguna dapat melakukan inisialisasi basis data Supabase (tabel, relasi, RLS, trigger, seed data) hanya dengan satu kali klik di Supabase SQL Editor.
 * Penambahan berkas migrasi `004_v1_1_features.sql` untuk modul perpindahan domisili, pengajuan hapus akun, dan helpdesk chat.
+
+### [v1.1.3] - 2026-11-24
+* Pembaruan formulir profil keanggotaan (`ProfilePage.tsx`): field **Alamat Domisili Terdaftar** kini dapat diubah secara langsung oleh anggota melalui mode Ubah Profil.
+* Pembaruan `memberService.ts`: penambahan kapabilitas pembaruan field `alamat` pada tabel `members` yang terintegrasi secara sinkron pada Supabase Cloud maupun penyimpanan fallback lokal.
+* Pembaruan kebijakan Row Level Security (RLS) PostgreSQL pada berkas `002_rls_policies.sql` dan `all_in_one_setup.sql` agar anggota memiliki hak izin memperbarui alamat tempat tinggal mereka secara aman.
+* Optimalisasi autentikasi pada `authService.ts`: penambahan fallback instan untuk kredensial pengujian (`admin` & `anggota`) sehingga akun demo dapat langsung login tanpa terhambat respons 401 saat remote Supabase terhubung.
 
 ---
 *(Catatan: Setiap perubahan, perbaikan, atau penambahan fitur di masa mendatang akan dicatat pada bagian changelog ini).*

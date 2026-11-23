@@ -105,20 +105,38 @@ export const memberService = {
   },
 
   /**
-   * Update member profile (restricted fields: nama, no_hp)
+   * Update member profile and address
    */
-  async updateProfile(profileId: string, data: { nama?: string; no_hp?: string }): Promise<{ success: boolean; error: string | null }> {
+  async updateProfile(
+    profileId: string,
+    data: { nama?: string; no_hp?: string; alamat?: string; memberId?: string }
+  ): Promise<{ success: boolean; error: string | null }> {
+    const { nama, no_hp, alamat, memberId } = data;
+
     if (isConfigured) {
       try {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            ...data,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', profileId);
+        if (nama !== undefined || no_hp !== undefined) {
+          const profileUpdate: Record<string, any> = { updated_at: new Date().toISOString() };
+          if (nama !== undefined) profileUpdate.nama = nama;
+          if (no_hp !== undefined) profileUpdate.no_hp = no_hp;
 
-        if (error) return { success: false, error: error.message };
+          const { error: profError } = await supabase
+            .from('profiles')
+            .update(profileUpdate)
+            .eq('id', profileId);
+
+          if (profError) return { success: false, error: profError.message };
+        }
+
+        if (alamat !== undefined) {
+          const query = memberId
+            ? supabase.from('members').update({ alamat }).eq('id', memberId)
+            : supabase.from('members').update({ alamat }).eq('profile_id', profileId);
+
+          const { error: memError } = await query;
+          if (memError) return { success: false, error: memError.message };
+        }
+
         return { success: true, error: null };
       } catch (err: any) {
         return { success: false, error: err.message || 'Gagal memperbarui profil.' };
@@ -127,15 +145,31 @@ export const memberService = {
 
     const store = getLocalStore();
     const profIndex = store.profiles.findIndex((p: any) => p.id === profileId);
-    if (profIndex === -1) {
-      return { success: false, error: 'Profil tidak ditemukan.' };
+    if (profIndex !== -1) {
+      store.profiles[profIndex] = {
+        ...store.profiles[profIndex],
+        ...(nama !== undefined ? { nama } : {}),
+        ...(no_hp !== undefined ? { no_hp } : {}),
+        updated_at: new Date().toISOString(),
+      };
     }
 
-    store.profiles[profIndex] = {
-      ...store.profiles[profIndex],
-      ...data,
-      updated_at: new Date().toISOString(),
-    };
+    if (alamat !== undefined) {
+      const memIndex = store.members.findIndex((m: any) =>
+        memberId ? m.id === memberId : m.profile_id === profileId
+      );
+      if (memIndex !== -1) {
+        store.members[memIndex].alamat = alamat;
+      }
+      if (store.activeSession?.member) {
+        store.activeSession.member.alamat = alamat;
+      }
+    }
+
+    if (store.activeSession?.profile && profIndex !== -1) {
+      store.activeSession.profile = { ...store.profiles[profIndex] };
+    }
+
     saveLocalStore(store);
     return { success: true, error: null };
   },
