@@ -121,93 +121,124 @@ function saveLocalStore(store: unknown) {
   localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(store));
 }
 
+function checkLocalDemoStore(cleanIdent: string, password: string): { session: UserSession | null; error: string | null } {
+  const store = getLocalStore();
+
+  const existingUser = store.users.find((u: any) => {
+    if (u.email && u.email.toLowerCase() === cleanIdent) return true;
+    if (Array.isArray(u.aliases) && u.aliases.some((a: string) => a.toLowerCase() === cleanIdent)) return true;
+    return false;
+  });
+
+  if (!existingUser) {
+    return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
+  }
+
+  const isPasswordMatch =
+    existingUser.password === password ||
+    (Array.isArray(existingUser.alternatePasswords) && existingUser.alternatePasswords.includes(password));
+
+  if (!isPasswordMatch) {
+    return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
+  }
+
+  const profile = store.profiles.find((p: any) => p.id === existingUser.id) || null;
+  const member = store.members.find((m: any) => m.profile_id === existingUser.id) || null;
+
+  const session: UserSession = {
+    user: { id: existingUser.id, email: existingUser.email },
+    profile,
+    member,
+  };
+
+  store.activeSession = session;
+  saveLocalStore(store);
+
+  return { session, error: null };
+}
+
 export const authService = {
   /**
    * Login with email and password
    */
-  async login(email: string, password: string):Promise<{ session: UserSession | null; error: string | null }> {
+  async login(email: string, password: string): Promise<{ session: UserSession | null; error: string | null }> {
     if (!email || !password) {
       return { session: null, error: 'Email dan kata sandi wajib diisi.' };
     }
 
+    const cleanIdent = email.trim().toLowerCase();
+    const isDemoIdentity =
+      cleanIdent === 'admin' ||
+      cleanIdent === 'pengurus' ||
+      cleanIdent === 'anggota' ||
+      cleanIdent.endsWith('@simkopdes.id');
+
     if (isConfigured) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      // Only call Supabase if email contains '@' and is not a plain alias
+      if (cleanIdent.includes('@')) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: cleanIdent,
+            password,
+          });
 
-        if (error) {
-          // Standardized safe error message to prevent enumeration (AC-008)
-          return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
+          if (!error && data?.user) {
+            // Fetch profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .maybeSingle();
+
+            // Fetch member
+            const { data: member } = await supabase
+              .from('members')
+              .select('*, profile:profiles(*)')
+              .eq('profile_id', data.user.id)
+              .maybeSingle();
+
+            return {
+              session: {
+                user: { id: data.user.id, email: data.user.email || email },
+                profile: profile || null,
+                member: member || null,
+              },
+              error: null,
+            };
+          }
+
+          // If Supabase returned error for a demo account, fall back to demo mode
+          if (isDemoIdentity) {
+            const demoRes = checkLocalDemoStore(cleanIdent, password);
+            if (demoRes.session) return demoRes;
+          }
+
+          if (error) {
+            if (error.message?.toLowerCase().includes('email not confirmed')) {
+              return {
+                session: null,
+                error: 'Email belum dikonfirmasi. Buka Supabase Dashboard > Authentication > Providers > Email, lalu matikan "Confirm email" agar login langsung aktif.',
+              };
+            }
+            return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
+          }
+        } catch (err: unknown) {
+          if (isDemoIdentity) {
+            const demoRes = checkLocalDemoStore(cleanIdent, password);
+            if (demoRes.session) return demoRes;
+          }
+          return { session: null, error: 'Terjadi kendala koneksi ke server Supabase. Silakan coba lagi.' };
         }
+      }
 
-        if (!data.user) {
-          return { session: null, error: 'Login belum berhasil. Silakan coba kembali.' };
-        }
-
-        // Fetch profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
-
-        // Fetch member
-        const { data: member } = await supabase
-          .from('members')
-          .select('*, profile:profiles(*)')
-          .eq('profile_id', data.user.id)
-          .maybeSingle();
-
-        return {
-          session: {
-            user: { id: data.user.id, email: data.user.email || email },
-            profile: profile || null,
-            member: member || null,
-          },
-          error: null,
-        };
-      } catch (err: unknown) {
-        return { session: null, error: 'Terjadi kendala koneksi ke server. Silakan coba beberapa saat lagi.' };
+      // If user typed alias like 'admin' or 'pengurus' or demo account without @
+      if (isDemoIdentity) {
+        return checkLocalDemoStore(cleanIdent, password);
       }
     }
 
-    // Offline / demo fallback for testing environments
-    const store = getLocalStore();
-    const cleanIdent = email.trim().toLowerCase();
-
-    const existingUser = store.users.find((u: any) => {
-      if (u.email && u.email.toLowerCase() === cleanIdent) return true;
-      if (Array.isArray(u.aliases) && u.aliases.some((a: string) => a.toLowerCase() === cleanIdent)) return true;
-      return false;
-    });
-
-    if (!existingUser) {
-      return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
-    }
-
-    const isPasswordMatch =
-      existingUser.password === password ||
-      (Array.isArray(existingUser.alternatePasswords) && existingUser.alternatePasswords.includes(password));
-
-    if (!isPasswordMatch) {
-      return { session: null, error: 'Email atau kata sandi tidak cocok. Silakan periksa kembali.' };
-    }
-
-    const profile = store.profiles.find((p: any) => p.id === existingUser.id) || null;
-    const member = store.members.find((m: any) => m.profile_id === existingUser.id) || null;
-
-    const session: UserSession = {
-      user: { id: existingUser.id, email: existingUser.email },
-      profile,
-      member,
-    };
-
-    store.activeSession = session;
-    saveLocalStore(store);
-
-    return { session, error: null };
+    // Offline / fallback mode
+    return checkLocalDemoStore(cleanIdent, password);
   },
 
   /**
