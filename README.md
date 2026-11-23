@@ -30,6 +30,7 @@ SIMKOPDES/
 │   └── types/                   # TypeScript Interfaces & Data Definitions
 ├── package.json
 ├── tailwind.config.js
+├── vercel.json                  # Konfigurasi SPA rewrite rules untuk Vercel
 └── README.md
 ```
 
@@ -131,6 +132,34 @@ npm run build
 
 ---
 
+## 🌐 Panduan Deploy ke Vercel
+
+Proyek ini telah dikonfigurasi penuh dan **100% siap di-deploy ke Vercel**:
+
+1. **Impor Repositori ke Vercel:**
+   * Buka [vercel.com](https://vercel.com) dan login dengan akun GitHub Anda.
+   * Klik **"Add New..."** > **"Project"**.
+   * Pilih repositori **`mdavaarya/RI_Project2`** lalu klik **"Import"**.
+
+2. **Konfigurasi Project Settings di Vercel:**
+   * **Framework Preset:** `Vite` (terdeteksi otomatis).
+   * **Root Directory:** `./` (default).
+   * **Build Command:** `npm run build` (atau `vite build`).
+   * **Output Directory:** `dist` (default).
+
+3. **Environment Variables (Opsional):**
+   * Jika menggunakan instance Supabase Cloud Anda sendiri, tambahkan variabel di menu **Environment Variables**:
+     - `VITE_SUPABASE_URL`: URL project Supabase Anda
+     - `VITE_SUPABASE_ANON_KEY`: Anon/public key Supabase Anda
+   * *Catatan:* Jika tidak menambahkan environment variables, aplikasi tetap dapat dijalankan secara instan di Vercel dalam mode demo bawaan dengan kredensial pengujian yang berfungsi penuh!
+
+4. **Konfigurasi Perutean SPA (`vercel.json`):**
+   * Berkas `vercel.json` sudah disediakan dengan aturan rewrite `/(.*) -> /index.html` sehingga navigasi halaman React Router (`/login`, `/dashboard`, `/pengurus/dashboard`, dll.) tidak akan mengalami error 404 saat direfresh.
+
+5. **Klik "Deploy"** dan aplikasi Anda akan aktif dalam hitungan detik!
+
+---
+
 ## 📜 CHANGELOG
 
 Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
@@ -166,6 +195,11 @@ Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
 * Implementasi halaman peninjauan permohonan anggota untuk pengurus (`/pengurus/permohonan`) untuk menyetujui/menolak perpindahan domisili dan penutupan akun.
 * Implementasi halaman manajemen Helpdesk & Chat Pengurus (`/pengurus/helpdesk`) untuk membaca dan membalas keluhan anggota secara langsung serta memperbarui status tiket.
 * Pembaruan menu bilah samping (*Sidebar*) dan rute aplikasi (*App Routes*) untuk mendukung navigasi modul baru.
+
+### [v1.1.1] - 2026-11-24
+* Penambahan berkas konfigurasi `vercel.json` dengan aturan rewrite URL untuk Single Page Application (SPA), memastikan tidak ada kendala *page not found* (404) ketika pengguna merefresh rute atau membuka tautan langsung di Vercel.
+* Penambahan panduan langkah-demi-langkah penerapan (*deployment*) ke platform Vercel pada `README.md`.
+* Verifikasi kesiapan build produksi untuk hosting cloud.
 
 ---
 *(Catatan: Setiap perubahan, perbaikan, atau penambahan fitur di masa mendatang akan dicatat pada bagian changelog ini).*
