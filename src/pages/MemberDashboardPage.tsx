@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { savingsService } from '../services/savingsService';
-import { SavingsSummary, SavingsTransaction } from '../types';
+import { helpdeskService } from '../services/helpdeskService';
+import { SavingsSummary, SavingsTransaction, HelpdeskTicket } from '../types';
 import { formatRupiah, formatIndonesianDate } from '../utils/formatters';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -20,12 +21,15 @@ import {
   AlertCircle,
   Clock,
   ShieldCheck,
+  MessageSquare,
+  ArrowUpRight,
 } from 'lucide-react';
 
 export function MemberDashboardPage() {
   const { session, profile, member } = useAuth();
   const [savingsSummary, setSavingsSummary] = useState<SavingsSummary | null>(null);
   const [recentSavings, setRecentSavings] = useState<SavingsTransaction[]>([]);
+  const [tickets, setTickets] = useState<HelpdeskTicket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,13 +38,15 @@ export function MemberDashboardPage() {
       if (member?.id) {
         setLoading(true);
         try {
-          const [summary, txs] = await Promise.all([
+          const [summary, txs, tkts] = await Promise.all([
             savingsService.getSavingsSummary(member.id),
             savingsService.getSavingsByMemberId(member.id),
+            helpdeskService.getTickets(member.id),
           ]);
           if (isMounted) {
             setSavingsSummary(summary);
             setRecentSavings(txs.slice(0, 3));
+            setTickets(tkts.slice(0, 3));
           }
         } catch (err) {
           console.error('Error loading member dashboard:', err);
@@ -234,6 +240,85 @@ export function MemberDashboardPage() {
                     </span>
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Helpdesk & Riwayat Pengaduan Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-[#E2E8F0]">
+          <div>
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-[#176B52]" />
+              Layanan Bantuan & Riwayat Pengaduan
+            </CardTitle>
+            <p className="text-xs text-[#526170] mt-0.5">
+              Pantau status laporan kendala Anda atau buka percakapan baru dengan pengurus
+            </p>
+          </div>
+          <Link to="/bantuan/chat">
+            <Button variant="outline" size="sm" className="text-[#176B52] border-[#176B52] hover:bg-[#E8F4EF]">
+              Buka Ruang Chat
+              <ArrowUpRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          </Link>
+        </CardHeader>
+
+        <CardContent className="pt-4">
+          {tickets.length === 0 ? (
+            <div className="text-center py-6 px-4 bg-[#F8FAFC] rounded-lg border border-dashed border-[#CBD5E1]">
+              <MessageSquare className="w-8 h-8 text-[#CBD5E1] mx-auto mb-2" />
+              <p className="text-xs font-medium text-[#17212B]">Belum ada riwayat pengaduan</p>
+              <p className="text-[11px] text-[#718096] mt-0.5 max-w-sm mx-auto">
+                Mengalami kendala akun, perpindahan domisili, atau simpanan? Sampaikan melalui fitur chat langsung tanpa perlu keluar aplikasi.
+              </p>
+              <div className="mt-3">
+                <Link to="/bantuan/chat">
+                  <Button variant="primary" size="sm">
+                    Kirim Pengaduan Baru
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-[#E2E8F0]">
+              {tickets.map((t) => (
+                <Link
+                  key={t.id}
+                  to="/bantuan/chat"
+                  className="py-3 flex items-center justify-between hover:bg-[#F8FAFC] px-2 rounded-lg transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-[11px] font-semibold text-[#176B52] bg-[#E8F4EF] px-1.5 py-0.5 rounded">
+                        {t.kategori}
+                      </span>
+                      <span className="font-semibold text-xs text-[#17212B]">{t.judul}</span>
+                    </div>
+                    <span className="text-[11px] text-[#718096]">
+                      Diajukan pada {formatIndonesianDate(t.tanggal_buat)}
+                    </span>
+                  </div>
+                  <div>
+                    {t.status === 'menunggu' && (
+                      <span className="text-[11px] font-semibold text-[#A16207] bg-[#FEF3C7] px-2 py-0.5 rounded">
+                        Menunggu Respons
+                      </span>
+                    )}
+                    {t.status === 'ditangani' && (
+                      <span className="text-[11px] font-semibold text-[#0369A1] bg-[#E0F2FE] px-2 py-0.5 rounded">
+                        Sedang Ditangani
+                      </span>
+                    )}
+                    {t.status === 'selesai' && (
+                      <span className="text-[11px] font-semibold text-[#15803D] bg-[#DCFCE7] px-2 py-0.5 rounded">
+                        Selesai
+                      </span>
+                    )}
+                  </div>
+                </Link>
               ))}
             </div>
           )}

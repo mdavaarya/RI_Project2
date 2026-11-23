@@ -10,6 +10,8 @@ import {
   Users,
   Shield,
   CreditCard,
+  MessageSquare,
+  FileCheck,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -32,13 +34,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { to: '/dashboard', label: 'Beranda Anggota', icon: LayoutDashboard },
     { to: '/simpanan', label: 'Riwayat Simpanan', icon: Wallet },
     { to: '/profil', label: 'Profil Saya', icon: UserRound },
+    { to: '/bantuan/chat', label: 'Layanan Chat Bantuan', icon: MessageSquare },
     { to: '/pinjaman', label: 'Pinjaman (Segera)', icon: CreditCard, disabled: true },
-    { to: '/bantuan', label: 'Pusat Bantuan', icon: HelpCircle },
+    { to: '/bantuan', label: 'Pusat Bantuan & FAQ', icon: HelpCircle },
   ];
 
   const pengurusNavItems: NavItem[] = [
     { to: '/pengurus/dashboard', label: 'Ringkasan Pengurus', icon: Shield },
     { to: '/pengurus/anggota', label: 'Kelola Anggota', icon: Users },
+    { to: '/pengurus/permohonan', label: 'Permohonan Layanan', icon: FileCheck },
+    { to: '/pengurus/helpdesk', label: 'Helpdesk & Chat', icon: MessageSquare },
     { to: '/bantuan', label: 'Panduan Pengurus', icon: HelpCircle },
   ];
 

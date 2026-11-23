@@ -17,6 +17,7 @@ interface AuthContextType {
     no_hp: string;
     email: string;
     password: string;
+    domisili_desa?: string;
   }) => Promise<{ success: boolean; member: Member | null; error: string | null }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;

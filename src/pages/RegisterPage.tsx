@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
 import { Alert } from '../components/ui/Alert';
 import { UserPlus, ArrowLeft, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { Member } from '../types';
+import { Member, DAFTAR_DESA } from '../types';
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -16,6 +16,7 @@ export function RegisterPage() {
     nama: '',
     nik: '',
     alamat: '',
+    domisili_desa: DAFTAR_DESA[0] as string,
     no_hp: '',
     email: '',
     password: '',
@@ -76,6 +77,7 @@ export function RegisterPage() {
         nama: formData.nama.trim(),
         nik: formData.nik.trim(),
         alamat: formData.alamat.trim(),
+        domisili_desa: formData.domisili_desa,
         no_hp: formData.no_hp.trim(),
         email: formData.email.trim(),
         password: formData.password,
@@ -195,7 +197,25 @@ export function RegisterPage() {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-[#17212B]">
-                  Alamat Domisili <span className="text-[#B91C1C]">*</span>
+                  Pilihan Domisili Unit Koperasi Desa <span className="text-[#B91C1C]">*</span>
+                </label>
+                <select
+                  value={formData.domisili_desa}
+                  onChange={(e) => setFormData({ ...formData, domisili_desa: e.target.value })}
+                  className="w-full h-10 px-3 bg-white text-[#17212B] text-sm border border-[#E2E8F0] rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#176B52]"
+                >
+                  {DAFTAR_DESA.map((desa) => (
+                    <option key={desa} value={desa}>
+                      {desa}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-[#526170]">Pilih desa domisili tempat koperasi Anda terdaftar.</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[#17212B]">
+                  Alamat Domisili Lengkap <span className="text-[#B91C1C]">*</span>
                 </label>
                 <textarea
                   className="w-full px-3 py-2 text-sm border border-[#E2E8F0] rounded-md focus:outline-none focus:ring-2 focus:ring-[#176B52] focus:border-[#176B52] placeholder:text-[#718096]"

@@ -86,6 +86,7 @@ function getLocalStore() {
       nomor_anggota: 'ANG-100201',
       nik: '3201012345670001',
       alamat: 'Dusun Sukamaju RT 02 RW 03, Desa Mandiri',
+      domisili_desa: 'Desa Sukamaju',
       status: 'aktif' as const,
       tanggal_daftar: new Date().toISOString(),
     });
@@ -219,8 +220,9 @@ export const authService = {
     no_hp: string;
     email: string;
     password: string;
+    domisili_desa?: string;
   }): Promise<{ success: boolean; member: Member | null; error: string | null }> {
-    const { nama, nik, alamat, no_hp, email, password } = params;
+    const { nama, nik, alamat, no_hp, email, password, domisili_desa = 'Desa Sukamaju' } = params;
 
     // Validation
     if (!nama.trim()) return { success: false, member: null, error: 'Nama lengkap wajib diisi.' };
@@ -307,6 +309,7 @@ export const authService = {
       nomor_anggota: nomorAnggota,
       nik,
       alamat,
+      domisili_desa,
       status: 'pending', // Pending approval per DEC-02
       tanggal_daftar: new Date().toISOString(),
       profile: newProfile,

@@ -1,6 +1,37 @@
 # SIMKOPDES — Sistem Informasi Koperasi Desa
 
-Aplikasi web modern untuk **SIMKOPDES (Sistem Informasi Koperasi Desa)** yang dibangun berdasarkan spesifikasi **PRD v1.1**, berfokus pada penguatan pengalaman akses, kemudahan login, pendaftaran ringkas, transparansi simpanan anggota, panduan terpadu, dan pengelolaan keanggotaan oleh pengurus.
+Aplikasi web modern untuk **SIMKOPDES (Sistem Informasi Koperasi Desa)** yang dibangun berdasarkan spesifikasi **PRD v1.1** dan **PRD v2.0**, berfokus pada penguatan pengalaman akses, kemudahan login, pendaftaran ringkas, transparansi simpanan anggota, kendali manajemen akun mandiri (perpindahan domisili dan pengajuan penghapusan akun), serta integrasi layanan bantuan Helpdesk & Chat internal.
+
+---
+
+## 📁 Struktur Direktori & Dokumentasi
+
+Untuk menjaga kerapian proyek, seluruh berkas spesifikasi dan dokumentasi arsitektur dipisahkan ke dalam direktori [`docs/`](docs/):
+
+```text
+SIMKOPDES/
+├── docs/                        # Dokumentasi spesifikasi, analisis, dan keputusan
+│   ├── PRD_SIMKOPDES_v1.1.md    # Product Requirements Document
+│   ├── FEATURE-LIST-DATA-MODEL.md # Fitur & Model Data
+│   ├── UX-SPEC.md               # Spesifikasi Pengalaman Pengguna
+│   ├── INTERACTION-SPEC.md      # Spesifikasi Interaksi
+│   ├── DESIGN-SYSTEM.md         # Design System & Token Warna (#176B52)
+│   ├── ACCEPTANCE-CRITERIA.md   # Kriteria Pengujian (AC-001 s/d AC-042)
+│   ├── AGENTS.md                # Panduan AI Coding Agent & Rules
+│   └── DECISIONS.md             # Catatan Keputusan Bisnis & Arsitektur
+├── src/                         # Kode Sumber Aplikasi
+│   ├── app/                     # App Router, Layout, & Error Boundary
+│   ├── components/              # Komponen UI (Buttons, Cards, Inputs, Badges, Modals)
+│   ├── hooks/                   # Custom React Hooks (useAuth, dll.)
+│   ├── pages/                   # Halaman Anggota & Halaman Pengurus
+│   ├── services/                # Supabase Client, Auth, Member, Helpdesk Services
+│   ├── styles/                  # Tailwind CSS & Design System Styles
+│   ├── supabase/migrations/     # Skema Database PostgreSQL & RLS Policies
+│   └── types/                   # TypeScript Interfaces & Data Definitions
+├── package.json
+├── tailwind.config.js
+└── README.md
+```
 
 ---
 
@@ -15,38 +46,43 @@ Aplikasi web modern untuk **SIMKOPDES (Sistem Informasi Koperasi Desa)** yang di
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Fitur Lengkap Aplikasi
 
 ### 1. Akses & Penanganan Kendala (FR-01 / UXR-01)
 * **Loading State Jujur:** Indikator pemuatan sesi dan data tanpa memanipulasi tampilan.
 * **Error Recovery & Error Boundary:** Pesan kesalahan non-teknis yang manusiawi jika koneksi terputus, dilengkapi tombol **Coba Lagi** (*safe retry*) tanpa mengekspos token atau stack trace.
 
-### 2. Login Ringkas & Aman (FR-02 / UXR-02)
+### 2. Login Ringkas & Fleksibel (FR-02 / UXR-02)
 * Dukungan identitas akun / email dengan validasi *inline*.
 * Opsi visibilitas kata sandi (*show/hide password*).
 * Alur pemulihan kata sandi via email (*Password Recovery*).
-* Proteksi terhadap *account enumeration* dan keamanan sesi otomatis.
+* Tombol pintas 1-klik untuk pengisian kredensial demo bagi pengujian lokal.
+* Pengalihan otomatis (*auto-redirect*) ke dashboard yang sesuai peran akun.
 
-### 3. Pendaftaran Anggota Baru (FR-03 / UXR-03)
-* Menjaga kemudahan proses pendaftaran calon anggota koperasi.
-* Isian formulir: Nama Lengkap, NIK (validasi 16 digit angka), Alamat Domisili, Nomor HP/WhatsApp, Email, dan Kata Sandi.
-* Pencegahan pengiriman ganda (*duplicate submission prevention*).
-* Status awal pendaftaran tercatat sebagai `Menunggu Verifikasi (Pending)` sesuai keputusan tata kelola koperasi.
+### 3. Pendaftaran Anggota Baru & Pilihan Domisili (FR-03 / UXR-03)
+* Pendaftaran ringkas: Nama Lengkap, NIK (16 digit), Pilihan Domisili Unit Koperasi Desa, Alamat Domisili, Nomor HP, Email, dan Kata Sandi.
+* Pencegahan pengiriman formulir ganda.
+* Status awal tercatat sebagai `Menunggu Verifikasi (Pending)`.
 
-### 4. Fitur Utama Anggota (FR-04 / UXR-04 — Working Assumption)
-* **Beranda Anggota:** Menampilkan status keanggotaan dan ringkasan saldo simpanan (Pokok, Wajib, Sukarela) yang dihitung dari transaksi database riil (tanpa angka dummy).
-* **Riwayat Simpanan:** Daftar transaksi lengkap dengan tanggal, jenis simpanan, nominal rupiah lokal, dan keterangan (*read-only* bagi anggota).
-* **Profil Saya:** Menampilkan data akun terlindungi. NIK disamarkan (*masked*), nomor anggota dan status keanggotaan dilindungi dari pengubahan sepihak.
+### 4. Fitur Utama Anggota & Manajemen Akun Mandiri (FR-04)
+* **Beranda Anggota:** Menampilkan status keanggotaan, unit domisili koperasi, ringkasan saldo simpanan riil (Pokok, Wajib, Sukarela), serta **Riwayat Pengaduan Terkini**.
+* **Riwayat Simpanan:** Daftar transaksi lengkap dengan tanggal, jenis simpanan, nominal rupiah, dan keterangan (*read-only* bagi anggota).
+* **Profil Saya & Pengaturan Akun:** 
+  - NIK disamarkan (*masked*), nomor anggota dan status keanggotaan terproteksi.
+  - **Pengajuan Pindah Domisili Koperasi Desa:** Anggota dapat mengajukan perpindahan unit koperasi ke desa lain beserta alasannya untuk diverifikasi oleh pengurus.
+  - **Pengajuan Penghapusan Akun:** Opsi penutupan akun dengan penjelasan konsekuensi hak simpanan dan persetujuan pengurus.
 
-### 5. Area Pengurus Koperasi (Working Assumption US-05)
-* **Rute Terproteksi:** Hanya pengguna dengan peran `pengurus` yang dapat membuka area ini.
-* **Ringkasan Operasional:** Statistik jumlah anggota riil per status (`pending`, `aktif`, `nonaktif`).
-* **Kelola Anggota:** Peninjauan permohonan anggota baru dan aksi verifikasi/aktivasi atau nonaktivasi anggota.
+### 5. Helpdesk Internal & Ruang Obrolan Interaktif (FR-05)
+* **Ruang Chat Terpadu (`/bantuan/chat`):** Mengatasi alur terputus (tidak wajib beralih ke WhatsApp/SMS).
+* Anggota dapat membuat tiket pengaduan (Kategori: Akun, Simpanan, Domisili, Layanan, dll.).
+* Fitur respon konfirmasi instan otomatis (*bot acknowledge*) dan balasan percakapan langsung dari pengurus koperasi.
+* Tombol kontak WhatsApp tetap tersedia sebagai alternatif komunikasi sekunder.
 
-### 6. Panduan & Navigasi Terpadu (FR-05 / UXR-05)
-* Pusat Bantuan interaktif dengan FAQ terperinci sesuai fitur yang tersedia di aplikasi.
-* Bantuan Kontekstual (*tooltips / hint dialog*) pada setiap bagian penting tanpa mengganggu formulir.
-* Penjelasan jujur mengenai modul pinjaman yang dinonaktifkan (*honest placeholder*) untuk menjaga kepatuhan ruang lingkup produk.
+### 6. Area Pengurus Koperasi (US-05)
+* **Ringkasan Pengurus (`/pengurus/dashboard`):** Statistik operasional jumlah anggota per status (`pending`, `aktif`, `nonaktif`).
+* **Kelola Anggota (`/pengurus/anggota`):** Verifikasi dan aktivasi pendaftaran anggota baru.
+* **Permohonan Layanan (`/pengurus/permohonan`):** Tinjauan dan persetujuan permohonan perpindahan domisili serta pengajuan penghapusan akun anggota.
+* **Helpdesk & Chat (`/pengurus/helpdesk`):** Manajemen seluruh tiket kendala anggota dan fasilitas membalas percakapan chat serta menandai status penyelesaian tiket.
 
 ---
 
@@ -58,8 +94,6 @@ Untuk memudahkan pengujian fungsional tanpa konfigurasi cloud, aplikasi dilengka
 |---|---|---|---|
 | **Admin / Pengurus** | `admin` *(atau `admin@simkopdes.id`)* | `password123` *(atau `admin123`)* | `/pengurus/dashboard` |
 | **Anggota Koperasi** | `anggota` *(atau `anggota@simkopdes.id`)* | `password123` | `/dashboard` |
-
-*Tersedia tombol pintas 1-klik di bawah formulir login untuk mengisi kredensial ini secara instan.*
 
 ---
 
@@ -97,26 +131,6 @@ npm run build
 
 ---
 
-## 🗄️ Database & Migrasi SQL
-
-Skema database PostgreSQL dan aturan Row Level Security (RLS) tersedia di:
-* `src/supabase/migrations/001_initial_schema.sql` — Tabel `profiles`, `members`, `savings`, `loans`, `help_contents`, `audit_logs`.
-* `src/supabase/migrations/002_rls_policies.sql` — Isolasi akses anggota dan wewenang pengurus.
-* `src/supabase/migrations/003_seed_help_contents.sql` — Data benih panduan & FAQ resmi.
-
----
-
-## 📝 Catatan Keputusan & Batasan Lingkup
-
-Seluruh keputusan bisnis dan batasan *working assumptions* didokumentasikan pada berkas [DECISIONS.md](DECISIONS.md):
-* **DEC-01:** Strategi login mengutamakan email/identitas akun untuk mencegah enumerasi akun dari sisi peramban.
-* **DEC-02:** Pendaftaran baru menghasilkan status awal `pending` untuk verifikasi pengurus.
-* **DEC-04:** Riwayat simpanan bersifat *read-only* bagi anggota.
-* **DEC-05:** Modul pinjaman penuh (bunga, cicilan, tenor, pencairan) berada di luar lingkup rilis v1.1 dan ditampilkan sebagai informasi (*placeholder* jujur).
-* **DEC-07:** Peran `pengurus` ditetapkan langsung di tingkat basis data dan tidak dapat dipilih melalui formulir publik.
-
----
-
 ## 📜 CHANGELOG
 
 Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
@@ -140,6 +154,18 @@ Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
 * Penambahan tombol pintas 1-klik pengisian kredensial demo pada formulir login untuk kemudahan verifikasi mandiri pengguna.
 * Penambahan logika pengalihan otomatis (*auto-redirect*) setelah login: pengguna dengan peran pengurus langsung diarahkan ke `/pengurus/dashboard`.
 * Perubahan tipe input identitas login menjadi teks agar peramban tidak memblokir input username tanpa format domain email.
+
+### [v1.1.0] - 2026-11-23
+* Perapian struktur direktori proyek: seluruh dokumen spesifikasi dan analisis (`PRD_SIMKOPDES_v1.1.md`, `UX-SPEC.md`, `INTERACTION-SPEC.md`, `DESIGN-SYSTEM.md`, `FEATURE-LIST-DATA-MODEL.md`, `ACCEPTANCE-CRITERIA.md`, `AGENTS.md`, `DECISIONS.md`) dipindahkan ke direktori khusus [`docs/`](docs/) agar repositori lebih tertata rapi.
+* Implementasi fitur pemilihan domisili unit koperasi desa pada formulir pendaftaran anggota (`RegisterPage`).
+* Implementasi fitur pengajuan perpindahan domisili koperasi desa pada halaman profil anggota (`ProfilePage`) beserta riwayat status pengajuan.
+* Implementasi fitur pengajuan penghapusan akun keanggotaan pada halaman profil (`ProfilePage`) dengan dialog penjelasan konsekuensi hak simpanan dan konfirmasi persetujuan pengurus.
+* Implementasi modul layanan Helpdesk & Chat internal (`/bantuan/chat`) dengan fitur percakapan langsung dengan pengurus, konfirmasi bot otomatis, dan pemantauan tiket tanpa perlu keluar ke aplikasi eksternal.
+* Penambahan tautan kontak WhatsApp sebagai opsi komunikasi sekunder pelengkap chat internal.
+* Penambahan kartu ringkasan riwayat pengaduan dan tautan cepat chat bantuan pada Beranda Anggota (`MemberDashboardPage`).
+* Implementasi halaman peninjauan permohonan anggota untuk pengurus (`/pengurus/permohonan`) untuk menyetujui/menolak perpindahan domisili dan penutupan akun.
+* Implementasi halaman manajemen Helpdesk & Chat Pengurus (`/pengurus/helpdesk`) untuk membaca dan membalas keluhan anggota secara langsung serta memperbarui status tiket.
+* Pembaruan menu bilah samping (*Sidebar*) dan rute aplikasi (*App Routes*) untuk mendukung navigasi modul baru.
 
 ---
 *(Catatan: Setiap perubahan, perbaikan, atau penambahan fitur di masa mendatang akan dicatat pada bagian changelog ini).*

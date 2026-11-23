@@ -14,6 +14,9 @@ import { ProfilePage } from '../pages/ProfilePage';
 import { ManagerDashboardPage } from '../pages/ManagerDashboardPage';
 import { ManageMembersPage } from '../pages/ManageMembersPage';
 import { HelpPage } from '../pages/HelpPage';
+import { HelpdeskPage } from '../pages/HelpdeskPage';
+import { ManageRequestsPage } from '../pages/ManageRequestsPage';
+import { ManagerHelpdeskPage } from '../pages/ManagerHelpdeskPage';
 import { LoanPlaceholderPage } from '../pages/LoanPlaceholderPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 
@@ -120,6 +123,14 @@ export function App() {
                 }
               />
               <Route
+                path="bantuan/chat"
+                element={
+                  <ProtectedRoute>
+                    <HelpdeskPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="pinjaman"
                 element={
                   <ProtectedRoute>
@@ -142,6 +153,22 @@ export function App() {
                 element={
                   <PengurusRoute>
                     <ManageMembersPage />
+                  </PengurusRoute>
+                }
+              />
+              <Route
+                path="pengurus/permohonan"
+                element={
+                  <PengurusRoute>
+                    <ManageRequestsPage />
+                  </PengurusRoute>
+                }
+              />
+              <Route
+                path="pengurus/helpdesk"
+                element={
+                  <PengurusRoute>
+                    <ManagerHelpdeskPage />
                   </PengurusRoute>
                 }
               />
