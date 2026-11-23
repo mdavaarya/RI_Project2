@@ -132,6 +132,21 @@ npm run build
 
 ---
 
+## 🗄️ Database & Migrasi SQL Supabase
+
+Untuk memudahkan instalasi di database Supabase Cloud, telah disediakan skrip **All-in-One**:
+
+* 👉 **`src/supabase/migrations/all_in_one_setup.sql` (Disarankan):**  
+  Cukup salin seluruh isi berkas ini, buka **Supabase Dashboard > SQL Editor > New query**, tempel, dan klik **Run**. Seluruh tabel, relasi, trigger, RLS policies, data FAQ, serta modul perpindahan domisili, hapus akun, dan helpdesk chat akan otomatis dibuat dalam 1 kali eksekusi!
+
+Atau jika ingin menjalankan berkas per tahap:
+* `001_initial_schema.sql` — Tabel dasar (`profiles`, `members`, `savings`, `loans`, `help_contents`).
+* `002_rls_policies.sql` — Kebijakan keamanan Row Level Security (RLS) dasar.
+* `003_seed_help_contents.sql` — Data panduan & FAQ resmi.
+* `004_v1_1_features.sql` — Tabel & RLS permohonan domisili, hapus akun, dan helpdesk chat.
+
+---
+
 ## 🌐 Panduan Deploy ke Vercel
 
 Proyek ini telah dikonfigurasi penuh dan **100% siap di-deploy ke Vercel**:
@@ -200,6 +215,10 @@ Semua perubahan dan evolusi sistem dicatat secara berurutan di bawah ini:
 * Penambahan berkas konfigurasi `vercel.json` dengan aturan rewrite URL untuk Single Page Application (SPA), memastikan tidak ada kendala *page not found* (404) ketika pengguna merefresh rute atau membuka tautan langsung di Vercel.
 * Penambahan panduan langkah-demi-langkah penerapan (*deployment*) ke platform Vercel pada `README.md`.
 * Verifikasi kesiapan build produksi untuk hosting cloud.
+
+### [v1.1.2] - 2026-11-24
+* Penambahan skrip migrasi database komprehensif `src/supabase/migrations/all_in_one_setup.sql` agar pengguna dapat melakukan inisialisasi basis data Supabase (tabel, relasi, RLS, trigger, seed data) hanya dengan satu kali klik di Supabase SQL Editor.
+* Penambahan berkas migrasi `004_v1_1_features.sql` untuk modul perpindahan domisili, pengajuan hapus akun, dan helpdesk chat.
 
 ---
 *(Catatan: Setiap perubahan, perbaikan, atau penambahan fitur di masa mendatang akan dicatat pada bagian changelog ini).*
