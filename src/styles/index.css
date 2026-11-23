@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #176B52;
+  --primary-hover: #125640;
+  --primary-pressed: #0E4634;
+  --primary-soft: #E8F4EF;
+  --primary-foreground: #FFFFFF;
+
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-muted: #F1F5F9;
+  --border: #E2E8F0;
+
+  --text-primary: #17212B;
+  --text-secondary: #526170;
+  --text-muted: #718096;
+  --disabled: #CBD5E1;
+
+  --success: #15803D;
+  --success-soft: #DCFCE7;
+  --warning: #A16207;
+  --warning-soft: #FEF3C7;
+  --danger: #B91C1C;
+  --danger-soft: #FEE2E2;
+  --info: #0369A1;
+  --info-soft: #E0F2FE;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
